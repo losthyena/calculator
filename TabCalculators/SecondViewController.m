@@ -52,6 +52,7 @@
 
 -(IBAction)buttonCalculate:(id)sender;
 {
+    // Basic error handling. Check all values are filled in.
     if ([textFieldStartingBalance.text isEqualToString:@""] ||
         [textFieldAnnualRateOfReturn.text isEqualToString:@""] ||
         [textFieldAmtYearlyContribution.text isEqualToString:@""] ||
@@ -61,10 +62,13 @@
         return;
     }
     
+    // Convert UITextField text to int/double
     [self getIntValues];
 
+    // Calculate the future value balance
     [self calculateFormula];
     
+    // Format and display the future value number
     NSNumberFormatter *formatter = [NSNumberFormatter new];
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [formatter setMaximumFractionDigits:2];
@@ -77,10 +81,9 @@
 {
     labelFutureValue.text = @"$0";
     [self clearTextFields];
-    
 }
 
-// 
+// Clears all values, reset to placeholder text
 -(void)clearTextFields;
 {
     labelFutureValue.text = @"$0";
@@ -91,6 +94,7 @@
     textFieldNumFutureYears.text = @"";
 }
 
+// Convert UITextField text to int/double
 - (void)getIntValues;
 {
     dStartingBalance = [textFieldStartingBalance.text doubleValue];
@@ -105,10 +109,9 @@
 {
     BOOL needSecondCalculation;
     double dRemainingYearsAfterContribution = 0;
-    
-    //Get the number of years to use in future value calculations.
     double dTime;
     
+    //Get the number of years to use in future value calculations. Determine if a secondary calculation is needed in case contribution years is less than the investment years
     if (iNumContributionYears <= iNumFutureYears){
         dTime = iNumContributionYears;
         needSecondCalculation = YES;
@@ -118,7 +121,7 @@
     }
 
     
-    //Calculate interest rate
+    //Calculate interest rate to be used in FV calculation
     double dInterestRate = dAnnualRateOfReturn/100;
     
     //FV compound interest calcuation on the starting balance
@@ -127,10 +130,10 @@
     //FV compound interest calculation on the monthly contributions
     double dFvBalanceContributions = (dAmtYearlyContribution)*((pow((1+dInterestRate),dTime+1) - (1+dInterestRate)) / dInterestRate);
     
-
     //Add the FV of the lump sum and the yearly contributions
     dFvFinalBalance = dFvBalanceLumpSum + dFvBalanceContributions;
     
+    //If the number of contribution years is less than total investment years, perform a FV calculation on the remainder of the years
     if (needSecondCalculation){
           dFvFinalBalance = dFvFinalBalance*pow((1 + dInterestRate),dRemainingYearsAfterContribution);
     }
@@ -139,7 +142,7 @@
 
 
 
-//Escape the keypad if user touches the view
+//Escape the keypad if user touches the view (copied from stackoverflow)
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
     NSLog(@"touchesBegan:withEvent:");
     [self.view endEditing:YES];
